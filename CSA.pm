@@ -18,8 +18,9 @@ require AutoLoader;
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 @EXPORT = qw(
-	SUBTYPE_APPOINTMENT
-	SUBTYPE_APPOINTMENT
+	CSA_CLASS_PUBLIC
+	CSA_CLASS_PRIVATE
+	CSA_CLASS_CONFIDENTIAL
 	SUBTYPE_CLASS
 	SUBTYPE_HOLIDAY
 	SUBTYPE_MISCELLANEOUS
@@ -85,7 +86,7 @@ require AutoLoader;
 	logon
 	list_calendars
 );
-$VERSION = '0.6';
+$VERSION = '0.7';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()

@@ -10,8 +10,8 @@ struct opts {
 	int value;
 	char * name;
 };
-
-
+void * Csa_safe_malloc(int size);
+void * Csa_safe_calloc(int nelems, size_t elsize);
 char * CsaError(int error);
 void CsaCroak(char * routine, int err);
 SV * newSVCSA_calendar_user(CSA_calendar_user * user);

@@ -4,4 +4,7 @@ Revision history for Perl extension Csa.
 	- original version; created by h2xs 1.16
 
 0.5   Wed Sep  3 14:49:00 1997
-    - First proposed release version
+	- First proposed release version
+
+0.7   Sun Sep 14 17:00:13 1997
+	- Added patches from Bharat to corect memory & stack allocations.

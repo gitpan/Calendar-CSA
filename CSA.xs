@@ -20,6 +20,9 @@ extern "C" {
 
 #include "CsaUtils.h"
 
+#define safe_malloc Csa_safe_malloc
+#define safe_calloc Csa_safe_calloc
+
 static int
 not_here(s)
 char *s;
@@ -134,7 +137,7 @@ SV * newSVCSA_reminder_reference(CSA_reminder_reference * rem, Calendar__CSA__Se
                 hv_store(u, "attribute_name", 14, newSVpv(rem->attribute_name, 0), 0);
         if (rem->entry) {
         		SV * e = newSVsv(&sv_undef);
-        		Calendar__CSA__Entry entry = malloc(sizeof(struct Calendar__CSA__Entry_t));
+        		Calendar__CSA__Entry entry = safe_malloc(sizeof(struct Calendar__CSA__Entry_t));
         		entry->entry = rem->entry;
         		entry->session = parent;
         		entry->session_sv = SvREFCNT_inc(parent_sv);
@@ -930,7 +933,7 @@ logon(service=0, user=0, password=0, charset=0)
 	char *	charset
 	CODE:
 	{
-		Calendar__CSA__Session session = calloc(sizeof(struct Calendar__CSA__Session_t),1);
+		Calendar__CSA__Session session = safe_calloc(sizeof(struct Calendar__CSA__Session_t),1);
 		CSA_return_code ret;
 		CSA_calendar_user cu;
 	
@@ -1201,7 +1204,7 @@ read_calendar_attributes(session, ...)
 		CSA_attribute * result;
 		CSA_attribute_reference * csa_names;
 		if (items>1) {
-			csa_names = calloc(sizeof(CSA_attribute_reference)*(items-1),1);
+			csa_names = safe_calloc(sizeof(CSA_attribute_reference)*(items-1),1);
 			for(i=1;i<items;i++)
 				csa_names[i-1] = lengthen(SvPV(ST(i), na));
 		} else {
@@ -1239,7 +1242,7 @@ read_next_reminder(session, given_time, ...)
 		CSA_attribute_reference * csa_names;
 
 		if (items>1) {
-			csa_names = calloc(sizeof(CSA_attribute_reference)*(items-1),1);
+			csa_names = safe_calloc(sizeof(CSA_attribute_reference)*(items-1),1);
 			for(i=1;i<items;i++)
 				csa_names[i-1] = SvPV(ST(i), na);
 		} else {
@@ -1273,7 +1276,7 @@ update_calendar_attributes(session, ...)
 		if ((items-1)%2)
 			croak("attributes must be paired names and values");
 		if (items>1) {
-			csa_attrs = calloc(sizeof(CSA_attribute_value)*((items-1)/2), 1);
+			csa_attrs = safe_calloc(sizeof(CSA_attribute)*((items-1)/2), 1);
 			for(j=0,i=1;i<items;j++,i+=2) {
 				csa_attrs[j].name = lengthen(SvPV(ST(i),na));
 				csa_attrs[j].value = SvCSA_attribute_value(ST(i+1), 0);
@@ -1306,7 +1309,7 @@ add_calendar(session, user, ...)
 		SvCSA_calendar_user(user, &u);	
 		
 		if (items>2) {
-			csa_attrs = calloc(sizeof(CSA_attribute_value)*((items-2)/2), 1);
+			csa_attrs = safe_calloc(sizeof(CSA_attribute)*((items-2)/2), 1);
 			for(j=0,i=2;i<items;j++,i+=2) {
 				csa_attrs[j].name = lengthen(SvPV(ST(i),na));
 				csa_attrs[j].value = SvCSA_attribute_value(ST(i+1), 0);
@@ -1336,7 +1339,7 @@ free_time_search(session, range, duration, calendar,...)
 		CSA_free_time * result;
 		CSA_calendar_user * csa_users;
 		if (items>3) {
-			csa_users = malloc(sizeof(CSA_calendar_user)*(items-3));
+			csa_users = safe_malloc(sizeof(CSA_calendar_user)*(items-3));
 			for(i=3;i<items;i++)
 				SvCSA_calendar_user(ST(i), &csa_users[i-3]);
 		} else
@@ -1468,7 +1471,8 @@ add_entry(session, ...)
 		if ((items-1)%2)
 			croak("attributes must be paired names and values");
 		if (items>1) {
-			csa_attrs = calloc(sizeof(CSA_attribute_value)*((items-1)/2), 1);
+			csa_attrs = safe_calloc(sizeof(CSA_attribute)*((items-1)/2), 1);
+
 			for(j=0,i=1;i<items;j++,i+=2) {
 				csa_attrs[j].name = lengthen(SvPV(ST(i),na));
 				csa_attrs[j].value = SvCSA_attribute_value(ST(i+1), 0);
@@ -1491,7 +1495,7 @@ add_entry(session, ...)
 		if (err)
 			CsaCroak("add_entry", err);
 		
-		entry = malloc(sizeof(struct Calendar__CSA__Entry_t));
+		entry = safe_malloc(sizeof(struct Calendar__CSA__Entry_t));
 		entry->session_sv = newRV(SvRV(ST(0)));
 		entry->session = session;
 		entry->entry = new_entry;
@@ -1518,8 +1522,8 @@ list_entries(session, ...)
 			croak("attributes must be paired names and values");
 			
 		if (items>1) {
-			csa_attrs = calloc(sizeof(CSA_attribute_value)*((items-1)/2), 1);
-			csa_matches = calloc(sizeof(CSA_enum)*((items-1)/2), 1);
+			csa_attrs = safe_calloc(sizeof(CSA_attribute)*((items-1)/2), 1);
+			csa_matches = safe_calloc(sizeof(CSA_enum)*((items-1)/2), 1);
 			for(j=0,i=1;i<items;j++,i+=2) {
 				SV * r;
 				csa_matches[j] = CSA_MATCH_ANY;
@@ -1566,7 +1570,7 @@ list_entries(session, ...)
 		if (new_entries) {
 			SV * result;
 
-			entrylist = malloc(sizeof(struct Calendar__CSA__EntryList_t));
+			entrylist = safe_malloc(sizeof(struct Calendar__CSA__EntryList_t));
 			entrylist->count = count;
 			entrylist->list = new_entries;
 			entrylist->session_sv = newRV(SvRV(ST(0)));
@@ -1612,7 +1616,7 @@ entries(entrylist)
 			croak("Cannot retrieve entries from a freed EntryList");
 
 		for(i=0;i<entrylist->count;i++) {
-			entry = malloc(sizeof(struct Calendar__CSA__Entry_t));
+			entry = safe_malloc(sizeof(struct Calendar__CSA__Entry_t));
 			entry->session_sv = newRV(SvRV(entrylist->session_sv));
 			entry->session = entrylist->session;
 			entry->entry = entrylist->list[i];
@@ -1654,7 +1658,7 @@ read_entry_attributes(entry, ...)
 		CSA_attribute * result;
 		CSA_attribute_reference * csa_names;
 		if (items>1) {
-			csa_names = calloc(sizeof(CSA_attribute_reference)*(items-1),1);
+			csa_names = safe_calloc(sizeof(CSA_attribute_reference)*(items-1),1);
 			for(i=1;i<items;i++)
 				csa_names[i-1] = lengthen(SvPV(ST(i), na));
 		} else {
@@ -1670,8 +1674,8 @@ read_entry_attributes(entry, ...)
 			CsaCroak("read_entry_attributes", err);
 		
 		if (result) {
+			EXTEND(sp, 2 * count);
 			for(i=0;i<count;i++) {
-				EXTEND(sp, 2);
 				PUSHs(sv_2mortal(newSVpv(shorten(result[i].name,entry->session->shorten), 0)));
 				PUSHs(sv_2mortal(newSVCSA_attribute_value(result[i].value, entry->session->shorten, entry->session->iso_times)));
 			}
@@ -1695,7 +1699,7 @@ update_entry_attributes(entry, scope, propagate, ...)
 		if ((items-3)%2)
 			croak("attributes must be paired names and values");
 		if (items>3) {
-			csa_attrs = calloc(sizeof(CSA_attribute_value)*((items-3)/2),1);
+			csa_attrs = safe_calloc(sizeof(CSA_attribute)*((items-3)/2),1);
 			for(j=0,i=3;i<items;i+=2,j++) {
 				csa_attrs[j].name = lengthen(SvPV(ST(i), na));
 				csa_attrs[j].value = SvCSA_attribute_value(ST(i+1), 0);
@@ -1737,7 +1741,7 @@ list_entry_sequence(entry, range=&sv_undef, ...)
 		if (new_entries) {
 			SV * result;
 
-			entrylist = malloc(sizeof(struct Calendar__CSA__EntryList_t));
+			entrylist = safe_malloc(sizeof(struct Calendar__CSA__EntryList_t));
 			entrylist->count = count;
 			entrylist->list = new_entries;
 			entrylist->session_sv = newRV(SvRV(entry->session_sv));

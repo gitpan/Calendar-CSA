@@ -56,15 +56,14 @@ Technical information:
 
     To build this module, you must have the CSA libraries and headers, which
     possibly may not be included with your base CDE installation. The key
-    libraries are csa, tt, DtSvc, DtHelp, DtWidget, Xt, and Xm. The only
-    header required is csa/csa.h. Makefile.PL assumes these exist in
-    -L/usr/dt/lib, -L/usr/X11R6/lib, and -I/usr/dt/include.  The names might
-    differ (in which case Makefile.PL and Csa.xs will need to be modified),
-    but the files must be present somewhere.
+    libraries are csa, and possibly DtSvc. The only header required is
+    csa/csa.h. Makefile.PL assumes these exist in -L/usr/dt/lib, and
+    -I/usr/dt/include.  The names might differ (in which case Makefile.PL
+    and Csa.xs will need to be modified), but the files must be present
+    somewhere.
     
-    This module almost certainly leaks memory quite badly after returning an
-    an entry list. In addition, the callback mechanism has been completely
-    untested (I was unable to provoke any callbacks.)
+    The callback mechanism has been completely untested (I was unable to
+    provoke any callbacks.)
     
     "We apologize for the inconvenience."
 

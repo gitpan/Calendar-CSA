@@ -827,7 +827,7 @@ CSA_attribute_value * SvCSA_attribute_value(SV * attr, CSA_attribute_value * tar
 		
 	h = (HV*)SvRV(attr);
 	if (!(s=hv_fetch(h, "type", 4, 0)) || !SvOK(*s))
-		croak("an anttribute value must be a hash containing type and value keys");
+		croak("an attribute value must be a hash containing type and value keys");
 	
 	type = SvOpt(*s, "attribute type", attributes);
 
@@ -1010,4 +1010,32 @@ char * lengthen(char * arg)
 		if (strEQ(short_names[i].s,arg))
 			return short_names[i].l;
 	return arg;
+}
+
+void * Csa_safe_calloc(int nelem, size_t elsize)
+{
+    void *ptr;
+
+    ptr = calloc(nelem, elsize);
+
+    if (ptr == NULL)
+    {
+	croak("out of memory");
+    }
+
+    return ptr;
+}
+
+void * Csa_safe_malloc(int size)
+{
+    void *ptr;
+    
+    ptr = malloc(size);
+
+    if (ptr == NULL)
+    {
+	croak("out of memory");
+    }
+
+    return ptr;
 }
