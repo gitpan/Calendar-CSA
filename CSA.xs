@@ -109,6 +109,15 @@ typedef struct Calendar__CSA__Entry_t {
 	CSA_entry_handle	entry;
 } * Calendar__CSA__Entry;
 
+typedef struct Calendar__CSA__EntryList_t {
+	SV	* session_sv;
+	Calendar__CSA__Session	session;
+	int 	count;
+	CSA_entry_handle	*list;
+} * Calendar__CSA__EntryList;
+
+
+
 SV * newSVCSA_reminder_reference(CSA_reminder_reference * rem, Calendar__CSA__Session parent, SV * parent_sv)
 {
         HV * u;
@@ -1483,7 +1492,7 @@ add_entry(session, ...)
 			CsaCroak("add_entry", err);
 		
 		entry = malloc(sizeof(struct Calendar__CSA__Entry_t));
-		entry->session_sv = SvREFCNT_inc(ST(0));
+		entry->session_sv = newRV(SvRV(ST(0)));
 		entry->session = session;
 		entry->entry = new_entry;
 		
@@ -1503,7 +1512,7 @@ list_entries(session, ...)
 		CSA_entry_handle *new_entries;
 		CSA_attribute * csa_attrs;
 		CSA_enum * csa_matches;
-		Calendar__CSA__Entry entry;
+		Calendar__CSA__EntryList entrylist;
 		
 		if ((items-1)%2)
 			croak("attributes must be paired names and values");
@@ -1553,31 +1562,66 @@ list_entries(session, ...)
 			free(csa_attrs);
 		if (csa_matches)
 			free(csa_matches);
-		
+
 		if (new_entries) {
-			for(i=0;i<count;i++) {
-				SV * result;
-				entry = malloc(sizeof(struct Calendar__CSA__Entry_t));
-				entry->session_sv = SvREFCNT_inc(ST(0));
-				entry->session = session;
-				entry->entry = new_entries[i];
-#ifdef CSA_DEBUG
-				printf("new entry, session = %d, entry = %d\n", entry->session, entry->entry);
-#endif
-				EXTEND(sp, 1);
-				result = sv_newmortal();
-				sv_setref_pv(result, "Calendar::CSA::Entry", (void*)entry);
-				PUSHs(result);
-			}
-			/* csa_free(new_entries); */
-#ifdef CSA_DEBUG
-			for(i=0;i<count;i++) {
-				printf("same entry, entry = %d\n", new_entries[i]);
-			}
-#endif
+			SV * result;
+
+			entrylist = malloc(sizeof(struct Calendar__CSA__EntryList_t));
+			entrylist->count = count;
+			entrylist->list = new_entries;
+			entrylist->session_sv = newRV(SvRV(ST(0)));
+			entrylist->session = session;
+
+			result = sv_newmortal();
+			sv_setref_pv(result, "Calendar::CSA::EntryList",
+					(void *)entrylist);
+			XPUSHs(result);
 		}
+
 	}
 
+MODULE = Calendar::CSA		PACKAGE = Calendar::CSA::EntryList
+
+void
+DESTROY(entrylist)	
+	Calendar::CSA::EntryList entrylist
+	CODE:
+	SvREFCNT_dec(entrylist->session_sv);
+	if (entrylist->list)
+		csa_free(entrylist->list);
+	free(entrylist);
+
+void
+free(entrylist)	
+	Calendar::CSA::EntryList entrylist
+	CODE:
+	if (entrylist->list)
+		csa_free(entrylist->list);
+	entrylist->list = 0;
+
+AV *
+entries(entrylist)
+	Calendar::CSA::EntryList entrylist
+	PPCODE:
+	{
+		int i;
+		Calendar__CSA__Entry entry;
+		SV *result;
+		
+		if (!entrylist->list)
+			croak("Cannot retrieve entries from a freed EntryList");
+
+		for(i=0;i<entrylist->count;i++) {
+			entry = malloc(sizeof(struct Calendar__CSA__Entry_t));
+			entry->session_sv = newRV(SvRV(entrylist->session_sv));
+			entry->session = entrylist->session;
+			entry->entry = entrylist->list[i];
+			result = sv_newmortal();
+			sv_setref_pv(result, "Calendar::CSA::Entry", 
+				     (void*)entry);
+			XPUSHs(result);
+		}
+	}
 
 MODULE = Calendar::CSA		PACKAGE = Calendar::CSA::Entry
 
@@ -1683,7 +1727,7 @@ list_entry_sequence(entry, range=&sv_undef, ...)
 		CSA_attribute * result;
 		CSA_entry_handle *new_entries;
 		CSA_attribute csa_attr;
-		Calendar__CSA__Entry newentry;
+		Calendar__CSA__EntryList entrylist;
 		
 		err = csa_list_entry_sequence(entry->session->session, entry->entry, SvISO_date_time_range(range,0), &count, &new_entries, NULL);
 
@@ -1691,26 +1735,19 @@ list_entry_sequence(entry, range=&sv_undef, ...)
 			CsaCroak("list_entry_sequence", err);
 		
 		if (new_entries) {
-			for(i=0;i<count;i++) {
-				SV * result;
-				newentry = malloc(sizeof(struct Calendar__CSA__Entry_t));
-				newentry->session_sv = SvREFCNT_inc(entry->session_sv);
-				newentry->session = entry->session;
-				newentry->entry = new_entries[i];
-#ifdef CSA_DEBUG
-				printf("new entry, session = %d, entry = %d\n", entry->session->session, entry->entry);
-#endif
-				EXTEND(sp, 1);
-				result = sv_newmortal();
-				sv_setref_pv(result, "Calendar::CSA::Entry", (void*)newentry);
-				PUSHs(result);
-			}
-			/* csa_free(new_entries); */
-#ifdef CSA_DEBUG
-			for(i=0;i<count;i++) {
-				printf("same entry, entry = %d\n", new_entries[i]);
-			}
-#endif
+			SV * result;
+
+			entrylist = malloc(sizeof(struct Calendar__CSA__EntryList_t));
+			entrylist->count = count;
+			entrylist->list = new_entries;
+			entrylist->session_sv = newRV(SvRV(entry->session_sv));
+			entrylist->session = entry->session;
+
+			result = sv_newmortal();
+			sv_setref_pv(result, 
+				     "Calendar::CSA::EntryList",
+				     (void *)entrylist);
+			XPUSHs(result);
 		}
 	}
 

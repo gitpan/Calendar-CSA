@@ -4,7 +4,7 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     'NAME'	=> 'Calendar::CSA',
     'VERSION_FROM' => 'CSA.pm',
-    'LIBS'	=> ['-L/usr/dt/lib -lcsa -L/usr/X11R6/lib -ltt -lDtSvc -lDtHelp -lDtWidget -lXt -lXm'],   	
+    'LIBS'	=> ['-L/usr/dt/lib -lcsa -lDtSvc', '-L/usr/dt/lib -lcsa'],   	
     'DEFINE'	=> '',     
     'INC'	=> '-I/usr/dt/include',     
     'OBJECT'	=> 'CSA.o CsaUtils.o',

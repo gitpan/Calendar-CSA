@@ -7,7 +7,7 @@
 
 use Calendar::CSA;
 
-$user = scalar getpwuid $>;
+$user = scalar getpwuid($>);
 $host = "localhost";
 
 print "Attempting to open database $user\@$host...\n";
@@ -42,7 +42,7 @@ print "Calendar attributes: ",join(", ", $session->list_calendar_attributes),"\n
 
 print "Number of entries: ", $session->read_calendar_attributes("Number Entries")->{value},"\n";
 
-@entries = $session->list_entries(
+$entrylist = $session->list_entries(
 	'Start Date' => {
     	type => 'DATE TIME',
        value => '19940101T010654Z',
@@ -56,7 +56,7 @@ print "Number of entries: ", $session->read_calendar_attributes("Number Entries"
 );
 
 print "Records starting between January 1st, 1994 and and December 30th, 1990: ",scalar(@entries),"\n";
-foreach (@entries) {
+foreach ($entrylist->entries) {
 	print "\tSummary of entry starting on ", scalar(localtime($_->read_entry_attributes('Start Date')->{value}));
 	print ": \"", $_->read_entry_attributes('Summary')->{value},"\"\n";
 }
