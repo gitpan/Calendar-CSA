@@ -925,6 +925,39 @@ constant(name, arg)
 	OUTPUT:
 	RETVAL
 
+
+void
+add_calendar(user, ...)
+	SV *	user
+	CODE:
+	{
+		int i, j, err;
+		CSA_calendar_user u;
+		CSA_attribute * csa_attrs;
+		
+		if ((items-1)%2)
+			croak("attributes must be paired names and values");
+
+		SvCSA_calendar_user(user, &u);	
+		
+		if (items>1) {
+			csa_attrs = safe_calloc(sizeof(CSA_attribute)*((items-1)/2), 1);
+			for(j=0,i=1;i<items;j++,i+=2) {
+				csa_attrs[j].name = lengthen(SvPV(ST(i),na));
+				csa_attrs[j].value = SvCSA_attribute_value(ST(i+1), 0);
+			}
+		} else
+			csa_attrs = 0;
+
+		err = csa_add_calendar((CSA_session_handle)NULL, &u, (items-1)/2, csa_attrs, NULL);
+		
+		if (csa_attrs)
+			free(csa_attrs);
+		
+		if (err)
+			CsaCroak("add_calendar", err);
+	}
+
 Calendar::CSA::Session
 logon(service=0, user=0, password=0, charset=0)
 	char *	service
@@ -1317,7 +1350,7 @@ add_calendar(session, user, ...)
 		} else
 			csa_attrs = 0;
 
-		err = csa_add_calendar(session->session, &u, items-2, csa_attrs, NULL);
+		err = csa_add_calendar(session->session, &u, (items-2)/2, csa_attrs, NULL);
 		
 		if (csa_attrs)
 			free(csa_attrs);

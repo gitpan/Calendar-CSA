@@ -31,7 +31,7 @@ char * CsaError(int error)
 	switch(error) {
 	case CSA_E_AMBIGUOUS_USER:		return "AMBIGUOUS USER";
 	case CSA_E_CALENDAR_EXISTS:		return "CALENDAR EXISTS";
-	case CSA_E_CALENDAR_NOT_EXIST:		return "CALENDAR NOT_EXIST";
+	case CSA_E_CALENDAR_NOT_EXIST:		return "CALENDAR NOT EXIST";
 	case CSA_E_CALLBACK_NOT_REGISTERED:	return "CALLBACK NOT REGISTERED";
 	case CSA_E_DISK_FULL:			return "DISK FULL";
 	case CSA_E_FAILURE:			return "FAILURE";

@@ -86,7 +86,7 @@ require AutoLoader;
 	logon
 	list_calendars
 );
-$VERSION = '0.7';
+$VERSION = '0.8';
 
 sub AUTOLOAD {
     # This AUTOLOAD is used to 'autoload' constants from the constant()

@@ -8,3 +8,7 @@ Revision history for Perl extension Csa.
 
 0.7   Sun Sep 14 17:00:13 1997
 	- Added patches from Bharat to corect memory & stack allocations.
+
+0.8   Mon Oct  6 17:50:48 1997
+	- Added sessionless add_calendar command, fixed an add_calendar bug, and
+	  fixed "CALENDAR NOT_EXIST" error.
